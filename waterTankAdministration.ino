@@ -1,3 +1,6 @@
+#include <Servo.h>
+
+
 // Habilitacion de debug para la impresion por el puerto serial ...
 //----------------------------------------------
 #define SERIAL_DEBUG_ENABLED 1
@@ -59,6 +62,15 @@ const int LOW_WATER_LEVEL    = 50 ;
 const int MEDIUM_WATER_LEVEL = 100;
 const int HIGH_WATER_LEVEL   = MEDIUM_WATER_LEVEL + 1 ;
 
+const int SERVO_1_PIN              = 8 ;
+const int WATER_GATE_OPENING_ANGLE = 90;
+
+
+const int RELAY_PIN = 12;
+//-----------
+
+Servo servo_1;
+
 
 
 
@@ -67,16 +79,21 @@ const int HIGH_WATER_LEVEL   = MEDIUM_WATER_LEVEL + 1 ;
 /*
 *Inicializamos los pins
 */
-void initialize_pins()
+void initialize_sistem()
 {
-  pinMode(LED_RED_PIN, OUTPUT);
-  pinMode(LED_GREEN_PIN, OUTPUT);
-  pinMode(LED_BLUE_PIN, OUTPUT);
+  pinMode(LED_RED_PIN     , OUTPUT);
+  pinMode(LED_GREEN_PIN   , OUTPUT);
+  pinMode(LED_BLUE_PIN    , OUTPUT);
  
   pinMode(DIST_SENSOR_TRIG, OUTPUT);
   pinMode(DIST_SENSOR_ECHO, INPUT);
+  
+  pinMode(RELAY_PIN       , OUTPUT); 
+  
+  servo_1.attach(SERVO_1_PIN);
 
 }
+
 
 int get_water_flow()
 {
@@ -100,6 +117,7 @@ double get_distance_to_the_water()
   return distancia;
   
 }
+
 
 bool is_low_level(double result, int min) 
 {
@@ -136,40 +154,46 @@ void show_water_tank_level()
 }
 
 
+//SERVO functions
+void open_water_gate()
+{
+  servo_1.write(WATER_GATE_OPENING_ANGLE);
+}
 
+//WATER PUMP functions
+void turn_on_water_pump()
+{
+  digitalWrite(RELAY_PIN, HIGH);
+}
+void turn_off_water_pump()
+{
+  digitalWrite(RELAY_PIN, HIGH);
+}
 
+//RGB functions
 void Color(int R, int G, int B)
- {     
-     analogWrite(LED_RED_PIN , R) ;   // Red    - Rojo
-     analogWrite(LED_GREEN_PIN, G) ;   // Green - Verde
-     analogWrite(LED_BLUE_PIN, B) ;   // Blue - Azul
- }
-
-
+{     
+     analogWrite(LED_RED_PIN , R) ;    // Red    - Rojo
+     analogWrite(LED_GREEN_PIN, G) ;   // Green  - Verde
+     analogWrite(LED_BLUE_PIN, B) ;    // Blue   - Azul
+}
 void turn_on_green_led()
 {
   Color ( 0, 255, 0);
 }
-
-/*
-enciende el led en color amarillo
-*/
 void turn_on_yellow_led()
 {
   Color ( 255, 255, 0);
 }
-
-/*
-enciende el led en color rojo
-*/
 void turn_on_red_led()
 {
   Color ( 255, 0, 0);
 }
 
+//---------------------------
 void setup()
 {
-  initialize_pins();
+  initialize_sistem();
   Serial.begin(SERIAL_BAUDS);
 }
 
@@ -177,4 +201,7 @@ void loop()
 {
   Serial.println(get_water_flow());
   show_water_tank_level();
+  open_water_gate();
+  turn_on_water_pump();
+
 }
